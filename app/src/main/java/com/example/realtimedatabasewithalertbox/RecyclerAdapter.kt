@@ -15,6 +15,8 @@ class RecyclerAdapter(
 ) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
     class ViewHolder(private var view: View) : RecyclerView.ViewHolder(view) {
 
+        // views which is present in recycler view
+
         var simage: ImageView = view.findViewById(R.id.imageV)
         var sName: TextView = view.findViewById(R.id.nameTv)
         var sClass: TextView = view.findViewById(R.id.classTv)
@@ -26,6 +28,8 @@ class RecyclerAdapter(
 
     }
 
+    // view holder work
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(parent.context)
@@ -35,12 +39,18 @@ class RecyclerAdapter(
 
     }
 
+
+
     override fun getItemCount(): Int {
+        // to get dyanamically size of Array
         return itemData.size
 
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
+        //holders in view which we make in layout
+
        holder.sName.setText(itemData[position].stdName)
         holder.sClass.setText(itemData[position].stdClass)
         holder.sRollNumber.setText(itemData[position].stdRollNumber.toString())

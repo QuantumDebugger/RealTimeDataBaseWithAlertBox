@@ -31,6 +31,9 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        // for locally add data
+
         binding.fabBtn.setOnClickListener {
             Dialog(this).apply {
                 setContentView(R.layout.custom_layout)
@@ -64,6 +67,8 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
             }.show()
         }
 
+        // to show on recycler view when data added
+
         binding.recyclerView.adapter = recyclerAdapter
         linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.layoutManager = linearLayoutManager
@@ -72,6 +77,9 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
 
 
     override fun materalButtonAdd(position: Int) {
+
+        // for update locally code
+
         Toast.makeText(this, "$position", Toast.LENGTH_SHORT).show()
         Dialog(this).apply {
             setContentView(R.layout.custom_layout)
@@ -113,7 +121,10 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
 
     }
 
+    // locally update finish
+
     override fun materalButtonDelete(position: Int) {
+        // for delete locally
         dataArray.removeAt(position)
         recyclerAdapter.notifyDataSetChanged()
 
