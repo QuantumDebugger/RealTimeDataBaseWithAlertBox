@@ -1,6 +1,7 @@
 package com.example.realtimedatabasewithalertbox
 
 import android.app.Dialog
+import android.nfc.Tag
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -13,12 +14,23 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.realtimedatabasewithalertbox.databinding.ActivityMainBinding
+import com.google.firebase.Firebase
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.firestore
 
 class MainActivity : AppCompatActivity(), RecyclerInterface {
     private lateinit var binding: ActivityMainBinding
     private var dataArray = arrayListOf<ItemData>()
     var recyclerAdapter = RecyclerAdapter(dataArray, this)
     lateinit var linearLayoutManager: LinearLayoutManager
+    // Fire Base (DATABASE REAL TIME)
+    var dbReference : DatabaseReference = FirebaseDatabase.getInstance().reference
+
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +43,60 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+
+        // REALTIME FUNCTIONS IMPLEMENTATION ROW-------------
+        dbReference.addChildEventListener(object : ChildEventListener{
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                var itemModel : ItemData?= snapshot.getValue(ItemData::class.java)
+                itemModel?.id = snapshot.key
+                dataArray.add(itemModel!!)
+
+                recyclerAdapter.notifyDataSetChanged()
+
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                var itemModel : ItemData?= snapshot.getValue(ItemData::class.java)
+                itemModel?.id = snapshot.key
+
+                if(itemModel != null){
+                    dataArray.forEachIndexed { index, itemDataModel ->
+                        if(itemDataModel.id == itemModel.id){
+
+                            dataArray[index] = itemModel
+
+                            recyclerAdapter.notifyDataSetChanged()
+
+                        }
+
+
+
+                    }
+
+                }
+
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                var itemModel : ItemData?= snapshot.getValue(ItemData::class.java)
+                itemModel?.id = snapshot.key
+                if (itemModel != null){
+                    dataArray.remove(itemModel)
+
+                    recyclerAdapter.notifyDataSetChanged()
+                }
+            }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+
+        })
 
         // for locally add data
 
@@ -57,8 +123,11 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
                         val studentName = sNameEt.text.toString()
                         val className = classEt.text.toString()
                         val rollNo = rollNoEt.text.toString()
-                        dataArray.add(ItemData(studentName,className,rollNo))
-                        recyclerAdapter.notifyDataSetChanged()
+                       // dataArray.add(ItemData(studentName,className,rollNo))  locally
+                        var key = dbReference.push().key.toString() // database realtime
+                        dbReference.child(key).setValue(ItemData(id = key, studentName, className, rollNo))
+
+                        // recyclerAdapter.notifyDataSetChanged()// locally
                         dismiss()
                     }
                 }
@@ -110,8 +179,13 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
                 } else if (rollNoET.text.isNullOrEmpty()) {
                     rollNoET.error = "Enter Roll Number"
                 } else {
-                    dataArray.set(position,ItemData(nameET.text.toString(),classET.text.toString(),rollNoET.text.toString()))
-                    recyclerAdapter.notifyDataSetChanged()
+                     val itemDataModel = ItemData(        // .set before ItemData and we are able to change only on recycler
+                         id = dataArray[position].id,
+                        stdName = nameET.text.toString(), stdClass = classET.text.toString(), stdRollNumber = rollNoET.text.toString())
+                    val hashMap = itemDataModel.toMap()
+                    dbReference.child(dataArray[position].id.toString()).updateChildren(hashMap)
+
+                    //recyclerAdapter.notifyDataSetChanged() // locally
                     dismiss()
                 }
             }
@@ -125,8 +199,11 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
 
     override fun materalButtonDelete(position: Int) {
         // for delete locally
-        dataArray.removeAt(position)
-        recyclerAdapter.notifyDataSetChanged()
+        //dataArray.removeAt(position)
+
+        dbReference.child(dataArray[position].id.toString()).removeValue() // for realtime database deletion
+
+        //recyclerAdapter.notifyDataSetChanged() locally
 
     }
 }
