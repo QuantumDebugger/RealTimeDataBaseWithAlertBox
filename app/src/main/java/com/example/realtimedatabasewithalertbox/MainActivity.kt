@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -198,10 +199,28 @@ class MainActivity : AppCompatActivity(), RecyclerInterface {
     // locally update finish
 
     override fun materalButtonDelete(position: Int) {
-        // for delete locally
-        //dataArray.removeAt(position)
+        //dataArray.removeAt(position) // for delete locally
 
-        dbReference.child(dataArray[position].id.toString()).removeValue() // for realtime database deletion
+        //--------------Alert Box on Delete---------------------
+
+        AlertDialog.Builder(this).apply {
+            setTitle("Do you want to delete record :${dataArray[position].id}")
+            setPositiveButton("YES"){_,_ ->
+
+                dbReference.child(dataArray[position].id.toString()).removeValue() // for realtime database deletion
+
+            }
+            setNegativeButton("NO"){dialog,_ ->
+                dialog.dismiss()
+
+
+            }
+
+        }.show()
+
+
+
+
 
         //recyclerAdapter.notifyDataSetChanged() locally
 
